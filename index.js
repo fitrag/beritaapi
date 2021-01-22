@@ -41,6 +41,39 @@ app.get('/berita', (req,res) => {
     }
 })
 
+app.get('/berita/detail/:id/:slug', (req, res) => {
+    const id = req.params.id
+    const slug = req.params.slug
+    try{
+
+        axios.get("https://www.antaranews.com/berita/" + id +"/" + slug)
+        .then(response => {
+            const $ = cheerio.load(response.data)
+            const content = $(".main-content")
+
+            const obj = {}
+
+            content.find(".row > .col-md-8 > article").each((id, el) => {
+                obj.judul = $(el).find(".post-header > h1").text()
+                obj.img = $(el).find(".post-header > figure > picture").find("img").attr("data-src")
+                obj.date = $(el).find(".post-header > .simple-share").text().trim()
+                $(el).find(".post-content > .baca-juga").remove()
+                $(el).find(".post-content > .adsbygoogle").remove()
+                $(el).find(".post-content > script").remove()
+                $(el).find(".post-content > .quote_old").remove()
+                $(el).find(".post-content > .text-muted").remove()
+                obj.content = $(el).find(".post-content").html()
+            })
+
+            res.json(obj)
+        })
+
+    }catch{
+
+    }
+})
+
+
 app.listen(PORT, () => {
-    console.log("Server running" + PORT)
+    console.log("Server running " + PORT)
 })
